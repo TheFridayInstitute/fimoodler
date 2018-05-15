@@ -13,10 +13,10 @@ Installation
 ``` r
 # The only version available is the development version from GitHub:
 # install.packages("devtools")
-devtools::install_github("TheFridayInstitute/fimoodler")
+devtools::install_github("TheFridayInstitute/fimoodler", build_vignettes = TRUE)
 ```
 
 Usage
 -----
 
-See docs/guide.pdf.
+See vignette.
