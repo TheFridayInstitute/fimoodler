@@ -53,7 +53,7 @@ Talk to your database administrator.  At the Friday Institute, this is Mark Samb
 ```{r eval=FALSE, indent = "    "}
 # The development version is the only version available
 # install.packages("devtools")
-devtools::install_github("TheFridayInstitute/fimoodler")
+devtools::install_github("TheFridayInstitute/fimoodler", build_vignettes = TRUE)
 ```
 3. Create a new RStudio project.  Each time you do an analysis for a paper/poster/presentation/etc., you should create a new RStudio project (or clone a previous project and edit the clone).  This will maintain a copy of your code, so you can always reproduce your analyses.  Projects should be used, instead of individual code files, so you can take advantage of Packrat and other RStudio tools that allow you to reproduce your development environment.
 4. Setup Packrat for your new project.  Packrat allows you to save a copy of the specific version of each package you are using in a project.  That way, if a package is ever changed or discontinued, you can still run your code the way it was originally run.

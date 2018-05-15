@@ -22,7 +22,7 @@ The `fimoodler` package has the functions you need to fetch, manipulate, and for
 ```{r, eval = FALSE}
 # The only version available is the development version from GitHub:
 # install.packages("devtools")
-devtools::install_github("TheFridayInstitute/fimoodler")
+devtools::install_github("TheFridayInstitute/fimoodler", build_vignettes = TRUE)
 ```
 
 ## Usage
