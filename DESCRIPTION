@@ -24,6 +24,7 @@ Imports: dplyr (>= 0.7.4),
 Suggests: rstudioapi (>= 0.7),
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+	stringi
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr

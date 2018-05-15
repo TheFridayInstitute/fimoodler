@@ -26,4 +26,4 @@ devtools::install_github("TheFridayInstitute/fimoodler")
 ```
 
 ## Usage
-See docs/guide.pdf.
+See vignette.
