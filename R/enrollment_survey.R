@@ -122,29 +122,32 @@ fetch_enroll_survey <- function(esurvey_id, user_ids,
   }
 
   # Wide format has a col for each question and response option if multi-select
-  chkbox_wide <- long %>%
-    dplyr::filter(qtype == "checkboxes") %>%
-    dplyr::select(userid, qname, rtxt, qchoices) %>%
-    apply(1, function(row) {
-      choices <- from_JSON(row["qchoices"])
-      selections <- from_JSON(row["rtxt"])
-      separated <- choices %in% selections %>%
-        setNames(choices) %>%
-        c(row["qname"], row["userid"]) %>%
-        as.list() %>%
-        dplyr::as_tibble() %>%
-        dplyr::mutate(userid = as.integer(userid))
-      lengthend <- separated %>%
-        tidyr::gather("key", "value", -qname, -userid)
-      return(lengthend)
-    }) %>%
-    dplyr::bind_rows() %>%
-    tidyr::unite("key", qname, key) %>%
-    tidyr::spread(key, value)
   wide <- long %>%
     dplyr::select(userid, qname, rtxt) %>%
-    tidyr::spread(qname, rtxt) %>%
-    dplyr::left_join(chkbox_wide, by = "userid")
+    tidyr::spread(qname, rtxt)
+  if (any(long$qtype == "checkboxes")) {
+    chkbox_wide <- long %>%
+      dplyr::filter(qtype == "checkboxes") %>%
+      dplyr::select(userid, qname, rtxt, qchoices) %>%
+      apply(1, function(row) {
+        choices <- from_JSON(row["qchoices"])
+        selections <- from_JSON(row["rtxt"])
+        separated <- choices %in% selections %>%
+          setNames(choices) %>%
+          c(row["qname"], row["userid"]) %>%
+          as.list() %>%
+          dplyr::as_tibble() %>%
+          dplyr::mutate(userid = as.integer(userid))
+        lengthend <- separated %>%
+          tidyr::gather("key", "value", -qname, -userid)
+        return(lengthend)
+      }) %>%
+      dplyr::bind_rows() %>%
+      tidyr::unite("key", qname, key) %>%
+      tidyr::spread(key, value)
+    wide <- wide %>%
+      dplyr::left_join(chkbox_wide, by = "userid")
+  }
 
   # Questions will not be included in long data if no responses
   all_non_group <- dplyr::tbl(con, "mdl_enrol_survey_questions") %>%
