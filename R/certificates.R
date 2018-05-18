@@ -40,6 +40,8 @@ fetch_certs <- function(cert_cm_id, user_ids, ..., con = get_session_con()) {
       certid = instance
     ) %>%
     dplyr::collect(n = Inf)
+  course_id <- cm$courseid[1]
+  cert_id <- cm$certid[1]
   avail <- from_JSON(cm$cmavail[1], simplifyVector = FALSE)
 
   # Aggregating conditions and requirements reduces number of db queries
@@ -49,9 +51,10 @@ fetch_certs <- function(cert_cm_id, user_ids, ..., con = get_session_con()) {
   pointer$vals <- list()
   fetch_avail_vals(pointer)
 
+  # Enrollment times needed to determine when some reqs are met
+  pointer$enroll <- fetch_enrolled_users(course_id, con = con)
+
   # Conditions and requirements must be met to earn cert
-  course_id <- cm$courseid[1]
-  cert_id <- cm$certid[1]
   certs_earned <- data.frame()
   for (i in 1:length(user_ids)) {
     user_id = user_ids[i]

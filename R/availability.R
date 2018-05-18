@@ -333,9 +333,16 @@ eval_req_completion <- function(req, pointer, user.id, course.id) {
                'coursemoduleid', req$cm))
   }
 
-  # If there is no value, the requirement is not met.
+  # If there is no value, an "incomplete" requirement is satisfied
   if (nrow(row) == 0) {
-    return(list(met=F, metOn=NA))
+    if (req$e == 0) {
+      # "incomplete" req was met when enrolled
+      mettc <- pointer$enroll$enrolltc[pointer$enroll$userid == user.id]
+      mettc <- ifelse(length(mettc) == 0, NA, mettc)
+      return(list(met=T, metOn=mettc))
+    } else {
+      return(list(met=F, metOn=NA))
+    }
   }
 
   # If there is a value, it must be compared to requirement
