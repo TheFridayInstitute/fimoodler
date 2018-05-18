@@ -26,4 +26,7 @@ devtools::install_github("TheFridayInstitute/fimoodler", build_vignettes = TRUE)
 ```
 
 ## Usage
-See vignette.
+```{r, eval = FALSE}
+# See vignette for details
+browseVignettes(package = "fimoodler")
+```
