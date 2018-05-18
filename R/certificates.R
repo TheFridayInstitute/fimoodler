@@ -84,7 +84,7 @@ fetch_certs <- function(cert_cm_id, user_ids, ..., con = get_session_con()) {
 
   # No view entry means not viewed
   res <- res %>%
-    tidyr::replace_na(list("certviewed" = FALSE)) %>%
+    tidyr::replace_na(list("certviewed" = FALSE))
 
   return(res)
 }
