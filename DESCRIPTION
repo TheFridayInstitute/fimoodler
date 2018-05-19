@@ -1,9 +1,13 @@
 Package: fimoodler
 Type: Package
 Title: Data Export for Friday Institute Moodle courses
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: c(
-    person("James", "Creager", email = "jhcreage@ncsu.edu", role = c("cre", "aut")))
+    person(
+      "James", 
+      "Creager", 
+      email = "jhcreage@ncsu.edu", 
+      role = c("cre", "aut")))
 Description: A standardized way to fetch, combine, and format Friday Institute
     Moodle data for common research purposes.  Function arguments highlight
     important decisions in the data filtering and selection process.
