@@ -26,6 +26,7 @@
 #' @param ... Potential future args.
 #' @param con A database connection object, using the session connection by
 #'   default.
+#' @return A tibble with certificate information for each input userid.
 #' @seealso \code{\link{list_certs}}
 #' @export
 fetch_certs <- function(cert_cm_id, user_ids, ..., con = get_session_con()) {
