@@ -2,16 +2,18 @@
 
 
 
-#' List values in database tables
+#' Peek at values in database tables
 #'
-#' List values in database tables for the purpose of quickly scanning what's
+#' Peek at values in database tables for the purpose of quickly scanning what's
 #' present and getting id numbers needed for other functions.
 #'
-#' @param course_id A single integer corresponding to a courseid in the
-#'   database (see \code{list_courses}).
+#' @param course_id A single integer corresponding to a courseid in the database
+#'   (see \code{list_courses}).
+#' @param qnr_cm_id A single integer corresponding to a questionnaire course
+#'   module id (see \code{list_cms}).
 #' @param con A database connection object, using the session connection by
 #'   default.
-#' @name dblist
+#' @name dbpeek
 NULL
 
 #' Table names in a Moodle database
@@ -42,7 +44,7 @@ list_cols <- function(table, con = get_session_con()) {
     return()
 }
 
-#' @describeIn dblist Courses
+#' @describeIn dbpeek Courses
 #' @export
 list_courses <- function(con = get_session_con()) {
   dplyr::tbl(con, "mdl_course") %>%
@@ -55,7 +57,7 @@ list_courses <- function(con = get_session_con()) {
     return()
 }
 
-#' @describeIn dblist Events currently in the logstore
+#' @describeIn dbpeek Events currently in the logstore
 #' @export
 list_events <- function(con = get_session_con()) {
   dplyr::tbl(con, "mdl_logstore_standard_log") %>%
@@ -67,7 +69,7 @@ list_events <- function(con = get_session_con()) {
     return()
 }
 
-#' @describeIn dblist Roles that can be given to users
+#' @describeIn dbpeek Roles that can be given to users
 #' @export
 list_roles <- function(con = get_session_con()) {
   dplyr::tbl(con, "mdl_role") %>%
@@ -81,7 +83,7 @@ list_roles <- function(con = get_session_con()) {
     return()
 }
 
-#' @describeIn dblist Sections (aka units) currently in a course
+#' @describeIn dbpeek Sections (aka units) currently in a course
 #' @export
 list_sections <- function(course_id, con = get_session_con()) {
   dplyr::tbl(con, "mdl_course_sections") %>%
@@ -96,7 +98,7 @@ list_sections <- function(course_id, con = get_session_con()) {
     return()
 }
 
-#' @describeIn dblist Modules in this Moodle installation
+#' @describeIn dbpeek Modules in this Moodle installation
 #' @export
 list_mods <- function(con = get_session_con()) {
   dplyr::tbl(con, "mdl_modules") %>%
@@ -105,7 +107,7 @@ list_mods <- function(con = get_session_con()) {
     return()
 }
 
-#' @describeIn dblist Course modules currently in a course
+#' @describeIn dbpeek Course modules currently in a course
 #' @export
 list_cms <- function(course_id, con = get_session_con()) {
   cms <- dplyr::tbl(con, "mdl_course_modules") %>%
@@ -128,7 +130,7 @@ list_cms <- function(course_id, con = get_session_con()) {
   return(cms)
 }
 
-#' @describeIn dblist Groups currently existing in a course
+#' @describeIn dbpeek Groups currently existing in a course
 #' @export
 list_groups <- function(course_id, con = get_session_con()) {
   g <- dplyr::tbl(con, "mdl_groups") %>%
@@ -137,7 +139,7 @@ list_groups <- function(course_id, con = get_session_con()) {
   return(g)
 }
 
-#' @describeIn dblist Surveys filled out during enrollment
+#' @describeIn dbpeek Surveys filled out during enrollment
 #' @export
 list_enroll_surveys <- function(course_id, con = get_session_con()) {
   q <- dplyr::tbl(con, "mdl_enrol_survey_questions") %>%
@@ -207,7 +209,7 @@ list_enroll_surveys <- function(course_id, con = get_session_con()) {
   return(non_grps)
 }
 
-#' @describeIn dblist Certificate instances
+#' @describeIn dbpeek Certificate instances
 #' @export
 list_certs <- function(course_id, con = get_session_con()) {
   certs <- dplyr::tbl(con, "mdl_certificate") %>%
