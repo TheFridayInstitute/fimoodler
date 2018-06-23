@@ -23,7 +23,7 @@
 #' @param con A database connection object, using the session connection by
 #'   default.
 #' @return A tibble with enrollment survey responses.
-#' @seealso \code{\link{list_enroll_surveys}}
+#' @seealso \code{\link{view_enroll_survey}}
 #' @export
 fetch_enroll_survey <- function(esurvey_id, user_ids,
                                 shape = "wide",

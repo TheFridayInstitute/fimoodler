@@ -38,5 +38,5 @@ account settings, or when they click the submit button twice before the page
 finishes loading.
 }
 \seealso{
-\code{\link{list_enroll_surveys}}
+\code{\link{view_enroll_survey}}
 }
