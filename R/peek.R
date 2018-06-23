@@ -13,101 +13,45 @@
 #'   module id (see \code{list_cms}).
 #' @param con A database connection object, using the session connection by
 #'   default.
-#' @name dbpeek
+#' @name peek
 NULL
 
-#' Table names in a Moodle database
-#'
-#' @keywords internal
-list_tables <- function(con = get_session_con()) {
-  q <- "SELECT table_name, table_comment
-  FROM INFORMATION_SCHEMA.TABLES
-  WHERE table_schema = \"moodle\""
-  dplyr::tbl(con, dplyr::sql(q)) %>%
-    dplyr::collect(n = Inf) %>%
-    return()
-}
-
-#' Column names in a Moodle database table
-#'
-#' @keywords internal
-list_cols <- function(table, con = get_session_con()) {
-  q = sprintf(
-    "SELECT column_name AS colname
-    FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE table_name = \"%s\"",
-    table
-  )
-  dplyr::tbl(con, dplyr::sql(q)) %>%
-    dplyr::collect(n = Inf) %>%
-    magrittr::use_series('colname') %>%
-    return()
-}
-
-#' @describeIn dbpeek Courses
+#' @describeIn peek Certificate instances
 #' @export
-list_courses <- function(con = get_session_con()) {
-  dplyr::tbl(con, "mdl_course") %>%
-    dplyr::select(
-      courseid = id,
-      coursefullname = fullname,
-      courseshortname = shortname
-    ) %>%
-    dplyr::collect(n = Inf) %>%
-    return()
-}
-
-#' @describeIn dbpeek Events currently in the logstore
-#' @export
-list_events <- function(con = get_session_con()) {
-  dplyr::tbl(con, "mdl_logstore_standard_log") %>%
-    dplyr::select(eventname) %>%
-    dplyr::distinct() %>%
-    dplyr::arrange(eventname) %>%
-    dplyr::collect(n = Inf) %>%
-    magrittr::use_series(eventname) %>%
-    return()
-}
-
-#' @describeIn dbpeek Roles that can be given to users
-#' @export
-list_roles <- function(con = get_session_con()) {
-  dplyr::tbl(con, "mdl_role") %>%
-    dplyr::select(
-      roleid = id,
-      rolefullname = name,
-      roleshortname = shortname,
-      roledesc = description
-    ) %>%
-    dplyr::collect(n = Inf) %>%
-    return()
-}
-
-#' @describeIn dbpeek Sections (aka units) currently in a course
-#' @export
-list_sections <- function(course_id, con = get_session_con()) {
-  dplyr::tbl(con, "mdl_course_sections") %>%
+list_certs <- function(course_id, con = get_session_con()) {
+  certs <- dplyr::tbl(con, "mdl_certificate") %>%
     dplyr::filter(course == course_id) %>%
     dplyr::select(
-      courseid = course,
-      sectionid = id,
-      section,
-      sectionname = name
+      certid = id,
+      certname = name,
+      certdesc1 = secondline,
+      certdesc2 = customtext
     ) %>%
+    dplyr::collect(n = Inf)
+
+  # User will need cmid for fetch function
+  modid <- dplyr::tbl(con, "mdl_modules") %>%
+    dplyr::filter(name == "certificate") %>%
+    dplyr::select(modid = id) %>%
     dplyr::collect(n = Inf) %>%
-    return()
+    magrittr::use_series(modid)
+  cms <- dplyr::tbl(con, "mdl_course_modules") %>%
+    dplyr::filter(module == modid, instance %in% certs$certid) %>%
+    dplyr::select(certid = instance, cmid = id) %>%
+    dplyr::collect(n = Inf)
+  cms <- cms %>%
+    dplyr::group_by(certid) %>%
+    dplyr::mutate(cmids = to_JSON(cmid)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-cmid) %>%
+    dplyr::distinct()
+  res <- certs %>%
+    dplyr::left_join(cms, by = "certid") %>%
+    dplyr::select(certid, cmids, dplyr::everything())
+  return(res)
 }
 
-#' @describeIn dbpeek Modules in this Moodle installation
-#' @export
-list_mods <- function(con = get_session_con()) {
-  dplyr::tbl(con, "mdl_modules") %>%
-    dplyr::select(modid = id, modname = name) %>%
-    dplyr::collect(n = Inf) %>%
-    return()
-}
-
-#' @describeIn dbpeek Course modules currently in a course
+#' @describeIn peek Course modules currently in a course
 #' @export
 list_cms <- function(course_id, con = get_session_con()) {
   cms <- dplyr::tbl(con, "mdl_course_modules") %>%
@@ -130,7 +74,48 @@ list_cms <- function(course_id, con = get_session_con()) {
   return(cms)
 }
 
-#' @describeIn dbpeek Groups currently existing in a course
+#' Column names in a Moodle database table
+#'
+#' @keywords internal
+list_cols <- function(table, con = get_session_con()) {
+  q = sprintf(
+    "SELECT column_name AS colname
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE table_name = \"%s\"",
+    table
+  )
+  dplyr::tbl(con, dplyr::sql(q)) %>%
+    dplyr::collect(n = Inf) %>%
+    magrittr::use_series('colname') %>%
+    return()
+}
+
+#' @describeIn peek Courses
+#' @export
+list_courses <- function(con = get_session_con()) {
+  dplyr::tbl(con, "mdl_course") %>%
+    dplyr::select(
+      courseid = id,
+      coursefullname = fullname,
+      courseshortname = shortname
+    ) %>%
+    dplyr::collect(n = Inf) %>%
+    return()
+}
+
+#' @describeIn peek Events currently in the logstore
+#' @export
+list_events <- function(con = get_session_con()) {
+  dplyr::tbl(con, "mdl_logstore_standard_log") %>%
+    dplyr::select(eventname) %>%
+    dplyr::distinct() %>%
+    dplyr::arrange(eventname) %>%
+    dplyr::collect(n = Inf) %>%
+    magrittr::use_series(eventname) %>%
+    return()
+}
+
+#' @describeIn peek Groups currently existing in a course
 #' @export
 list_groups <- function(course_id, con = get_session_con()) {
   g <- dplyr::tbl(con, "mdl_groups") %>%
@@ -139,9 +124,59 @@ list_groups <- function(course_id, con = get_session_con()) {
   return(g)
 }
 
-#' @describeIn dbpeek Surveys filled out during enrollment
+#' @describeIn peek Modules in this Moodle installation
 #' @export
-list_enroll_surveys <- function(course_id, con = get_session_con()) {
+list_mods <- function(con = get_session_con()) {
+  dplyr::tbl(con, "mdl_modules") %>%
+    dplyr::select(modid = id, modname = name) %>%
+    dplyr::collect(n = Inf) %>%
+    return()
+}
+
+#' @describeIn peek Roles that can be given to users
+#' @export
+list_roles <- function(con = get_session_con()) {
+  dplyr::tbl(con, "mdl_role") %>%
+    dplyr::select(
+      roleid = id,
+      rolefullname = name,
+      roleshortname = shortname,
+      roledesc = description
+    ) %>%
+    dplyr::collect(n = Inf) %>%
+    return()
+}
+
+#' @describeIn peek Sections (aka units) currently in a course
+#' @export
+list_sections <- function(course_id, con = get_session_con()) {
+  dplyr::tbl(con, "mdl_course_sections") %>%
+    dplyr::filter(course == course_id) %>%
+    dplyr::select(
+      courseid = course,
+      sectionid = id,
+      section,
+      sectionname = name
+    ) %>%
+    dplyr::collect(n = Inf) %>%
+    return()
+}
+
+#' Table names in a Moodle database
+#'
+#' @keywords internal
+list_tables <- function(con = get_session_con()) {
+  q <- "SELECT table_name, table_comment
+  FROM INFORMATION_SCHEMA.TABLES
+  WHERE table_schema = \"moodle\""
+  dplyr::tbl(con, dplyr::sql(q)) %>%
+    dplyr::collect(n = Inf) %>%
+    return()
+}
+
+#' @describeIn peek Surveys filled out during enrollment
+#' @export
+view_enroll_surveys <- function(course_id, con = get_session_con()) {
   q <- dplyr::tbl(con, "mdl_enrol_survey_questions") %>%
     dplyr::filter(courseid == course_id) %>%
     dplyr::select(
@@ -207,39 +242,4 @@ list_enroll_surveys <- function(course_id, con = get_session_con()) {
   non_grps <- non_grps %>%
     dplyr::arrange(esurveyid, qpos)
   return(non_grps)
-}
-
-#' @describeIn dbpeek Certificate instances
-#' @export
-list_certs <- function(course_id, con = get_session_con()) {
-  certs <- dplyr::tbl(con, "mdl_certificate") %>%
-    dplyr::filter(course == course_id) %>%
-    dplyr::select(
-      certid = id,
-      certname = name,
-      certdesc1 = secondline,
-      certdesc2 = customtext
-    ) %>%
-    dplyr::collect(n = Inf)
-
-  # User will need cmid for fetch function
-  modid <- dplyr::tbl(con, "mdl_modules") %>%
-    dplyr::filter(name == "certificate") %>%
-    dplyr::select(modid = id) %>%
-    dplyr::collect(n = Inf) %>%
-    magrittr::use_series(modid)
-  cms <- dplyr::tbl(con, "mdl_course_modules") %>%
-    dplyr::filter(module == modid, instance %in% certs$certid) %>%
-    dplyr::select(certid = instance, cmid = id) %>%
-    dplyr::collect(n = Inf)
-  cms <- cms %>%
-    dplyr::group_by(certid) %>%
-    dplyr::mutate(cmids = to_JSON(cmid)) %>%
-    dplyr::ungroup() %>%
-    dplyr::select(-cmid) %>%
-    dplyr::distinct()
-  res <- certs %>%
-    dplyr::left_join(cms, by = "certid") %>%
-    dplyr::select(certid, cmids, dplyr::everything())
-  return(res)
 }
