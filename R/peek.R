@@ -176,7 +176,7 @@ list_tables <- function(con = get_session_con()) {
 
 #' @describeIn peek Surveys filled out during enrollment
 #' @export
-view_enroll_surveys <- function(course_id, con = get_session_con()) {
+view_enroll_survey <- function(course_id, con = get_session_con()) {
   q <- dplyr::tbl(con, "mdl_enrol_survey_questions") %>%
     dplyr::filter(courseid == course_id) %>%
     dplyr::select(
@@ -243,3 +243,5 @@ view_enroll_surveys <- function(course_id, con = get_session_con()) {
     dplyr::arrange(esurveyid, qpos)
   return(non_grps)
 }
+
+
