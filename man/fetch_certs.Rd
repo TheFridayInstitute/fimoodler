@@ -17,6 +17,9 @@ module id (see \code{list_certs} or \code{list_cms}).}
 \item{con}{A database connection object, using the session connection by
 default.}
 }
+\value{
+A tibble with certificate information for each input userid.
+}
 \description{
 Returns information about whether users earned and viewed a course
 certificate, in addition to what datetime those events occurred.
