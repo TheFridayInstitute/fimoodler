@@ -244,4 +244,102 @@ view_enroll_survey <- function(course_id, con = get_session_con()) {
   return(non_grps)
 }
 
+#' @describeIn peek Questionnaire questions
+#' @export
+view_questionnaire <- function(qnr_cm_id, con = get_session_con()) {
+  qnr_id <- dplyr::tbl(con, "mdl_course_modules") %>%
+    dplyr::filter(id == qnr_cm_id) %>%
+    dplyr::collect(n = Inf) %>%
+    magrittr::use_series(instance)
+  q <- dplyr::tbl(con, "mdl_questionnaire_question") %>%
+    dplyr::filter(
+      survey_id == qnr_id,
+      !(type_id %in% c(99, 100)),  #page break and section text
+      deleted == "n") %>%
+    dplyr::select(
+      qnrid = survey_id,
+      qid = id,
+      qpos = position,
+      qrequired = required,
+      qtxt = content,
+      typeid = type_id)
+  qt <- dplyr::tbl(con, "mdl_questionnaire_question_type") %>%
+    dplyr::filter(
+      response_table != "") %>%
+    dplyr::select(
+      qtype = type,
+      rtable = response_table,
+      typeid)
+  qnr <- q %>%
+    dplyr::left_join(qt, by = "typeid") %>%
+    dplyr::select(-typeid) %>%
+    dplyr::collect(n = Inf)
+  qnr <- qnr %>%
+    dplyr::mutate(
+      qrequired = ifelse(
+        qrequired == "n",
+        FALSE,
+        TRUE))
+
+  # Question text is in HTML format
+  qnr <- qnr %>%
+    dplyr::mutate(qtxt = paste0("<html>", qtxt, "</html>"))
+  qnr$qtxt <- sapply(qnr$qtxt, function(x) {
+    xml2::read_html(x) %>%
+      rvest::html_text()
+  }, USE.NAMES = FALSE)
+
+  # Items and choices are stored separately in long format
+  qc <- dplyr::tbl(con, "mdl_questionnaire_quest_choice") %>%
+    dplyr::filter(question_id %in% qnr$qid) %>%
+    dplyr::select(
+      qid = question_id,
+      qcid = id,
+      content,
+      value) %>%
+    dplyr::collect(n = Inf)
+  qc <- qc %>%
+    dplyr::left_join(dplyr::select(qnr, qid, rtable), by = "qid")
+  items <- qc %>%
+    dplyr::filter(rtable == "response_rank", is.na(value)) %>%
+    dplyr::select(qid, qitemid = qcid, itemtxt = content)
+  choices <- qc %>%
+    dplyr::filter(!(rtable == "response_rank" & is.na(value))) %>%
+    dplyr::arrange(value) %>%
+    dplyr::select(qid, choicetxt = content)
+
+  # 1q-to-1a makes most sense
+  qnr <- qnr %>%
+    dplyr::left_join(items, by = "qid") %>%
+    dplyr::mutate(
+      qtxt = ifelse(
+        is.na(itemtxt),
+        qtxt,
+        paste(qtxt, itemtxt, sep = " >> "))) %>%
+    dplyr::select(-itemtxt, -rtable)
+
+  # Collapsed choices are easier to read
+  collapsed <- choices %>%
+    dplyr::group_by(qid) %>%
+    dplyr::mutate(qchoices = to_JSON(choicetxt)) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct(qid, qchoices)
+  qnr <- qnr %>%
+    dplyr::left_join(collapsed, by = "qid")
+
+  # Yes/No questions don't have choices in db table
+  yn <- dplyr::tibble(qtype = "Yes/No", qchoices = to_JSON(c("Yes", "No")))
+  qnr <- qnr %>%
+    dplyr::left_join(yn, by = "qtype") %>%
+    dplyr::mutate(qchoices = dplyr::coalesce(qchoices.x, qchoices.y)) %>%
+    dplyr::select(-qchoices.x, -qchoices.y)
+
+  # Column order should be consistent across view functions
+  qnr <- qnr %>%
+    dplyr::select(qnrid, qid, qitemid, qpos, qrequired, qtype, qtxt, qchoices,
+                  dplyr::everything()) %>%
+    dplyr::arrange(qpos, qitemid)
+
+  return(qnr)
+}
 
