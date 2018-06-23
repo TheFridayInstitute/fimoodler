@@ -12,7 +12,8 @@
 #' finishes loading.
 #'
 #' @param esurvey_id A single integer corresponding to an enrollment survey id
-#'   in the database.
+#'   in the database.  This is NOT a course module id, because enrollment
+#'   surveys are not course modules.
 #' @param user_ids A vector of integers corresponding to userids.
 #' @param shape A single string specifying what shape the returned data should
 #'   have.  \code{"wide"} output has one row per input userid and a column for

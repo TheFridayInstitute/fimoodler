@@ -9,7 +9,8 @@ fetch_enroll_survey(esurvey_id, user_ids, shape = "wide", ...,
 }
 \arguments{
 \item{esurvey_id}{A single integer corresponding to an enrollment survey id
-in the database.}
+in the database.  This is NOT a course module id, because enrollment
+surveys are not course modules.}
 
 \item{user_ids}{A vector of integers corresponding to userids.}
 
