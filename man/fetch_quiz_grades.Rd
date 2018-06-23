@@ -21,8 +21,19 @@ default.}
 A tibble with quiz grade information for each input userid.
 }
 \description{
-Returns quiz grades and the maximum possible grade for the specified quiz and
-users. Missing grades are given a value of \code{NA}.
+Returns the most recent final quiz grades and the maximum possible grade for
+the specified quiz and users.
+}
+\details{
+Missing grades are given a value of \code{NA}.
+
+Note that the final grades reported here are scaled, if scaling was
+specified in the quiz.  After summing the individual quiz question grades,
+Moodle is capable of scaling the sum.  For example, a quiz may be scored on a
+5 point scale (grade sums ranging 0-5), but scaled to a range of 0-20 for
+contribution to final grade in a class.  If 100 points can be earned
+according to they syllabus, then a range of 0-20 would mean the quiz is 20%
+of the final course grade.
 }
 \seealso{
 \code{\link{list_cms}}

@@ -414,6 +414,19 @@ certs <- dplyr::tibble(userid = user_ids) %>%
   dplyr::bind_cols(fetch_certs(cert_cm_id = 4580, user_ids = user_ids))
 ```
 
+## Quizzes
+Quizzes are added to courses as course modules.  You can figure out which quizzes are in a course with `list_cms`. Note that micro-credentials quizzes are located in a separate micro-credential "course" (courseid 15).  MOOCs that include micro-credentials actually link to quizzes in the micro-credential course.
+
+Final quiz grades can be retrieved with the `fetch_quiz_grades` function.  Note, this returns the most recent grade for each user.  You can only see past grades if you dig into the logs.  Note that the *final* grades reported here are scaled, if scaling was specified in the quiz.  After summing the individual quiz question grades, Moodle is capable of scaling the sum.  For example, a quiz may be scored on a 5 point scale (grade sums ranging 0-5), but scaled to a range of 0-20 for contribution to final grade in a class.  If 100 points can be earned according to they syllabus, then a range of 0-20 would mean the quiz is 20% of the final course grade.
+
+```{r eval=FALSE}
+# Working memory micro-credential grades
+user_ids = c(16122, 15302, 15153, 15796, 15831, 15698)
+grades <- dplyr::tibble(userid = user_ids) %>%
+  dplyr::bind_cols(
+    fetch_quiz_grades(quiz_cm_id = 3060, user_ids = user_ids))
+```
+
 ## Computing Variables
 
 In general, you will have to write your own code to compute your variables.  The `dplyr` package can help you manipulate and summarize data fetched with `fimoodler` to get the variables you need.  
