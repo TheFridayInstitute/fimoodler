@@ -283,7 +283,8 @@ view_questionnaire <- function(qnr_cm_id, con = get_session_con()) {
 
   # Question text is in HTML format
   qnr <- qnr %>%
-    dplyr::mutate(qtxt = paste0("<html>", qtxt, "</html>"))
+    dplyr::mutate(
+      qtxt = paste0("<html>", qtxt, "</html>"))
   qnr$qtxt <- sapply(qnr$qtxt, function(x) {
     xml2::read_html(x) %>%
       rvest::html_text()
@@ -291,7 +292,8 @@ view_questionnaire <- function(qnr_cm_id, con = get_session_con()) {
 
   # Items and choices are stored separately in long format
   qc <- dplyr::tbl(con, "mdl_questionnaire_quest_choice") %>%
-    dplyr::filter(question_id %in% qnr$qid) %>%
+    dplyr::filter(
+      question_id %in% qnr$qid) %>%
     dplyr::select(
       qid = question_id,
       qcid = id,
@@ -299,14 +301,30 @@ view_questionnaire <- function(qnr_cm_id, con = get_session_con()) {
       value) %>%
     dplyr::collect(n = Inf)
   qc <- qc %>%
-    dplyr::left_join(dplyr::select(qnr, qid, rtable), by = "qid")
+    dplyr::left_join(
+      dplyr::select(qnr, qid, rtable),
+      by = "qid")
   items <- qc %>%
-    dplyr::filter(rtable == "response_rank", is.na(value)) %>%
-    dplyr::select(qid, qitemid = qcid, itemtxt = content)
+    dplyr::filter(
+      rtable == "response_rank",
+      is.na(value)) %>%
+    dplyr::select(
+      qid,
+      qitemid = qcid,
+      itemtxt = content)
   choices <- qc %>%
-    dplyr::filter(!(rtable == "response_rank" & is.na(value))) %>%
-    dplyr::arrange(value) %>%
-    dplyr::select(qid, choicetxt = content)
+    dplyr::filter(
+      !(rtable == "response_rank" & is.na(value))) %>%
+    dplyr::arrange(
+      value) %>%
+    dplyr::select(
+      qid,
+      choicetxt = content) %>%
+    dplyr::mutate(
+      choicetxt = ifelse(
+        stringr::str_detect(choicetxt, "^!other"),
+        "Other",
+        choicetxt))
 
   # 1q-to-1a makes most sense
   qnr <- qnr %>%
