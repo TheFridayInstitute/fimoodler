@@ -1,7 +1,7 @@
 Package: fimoodler
 Type: Package
 Title: Data Export for Friday Institute Moodle courses
-Version: 0.0.0.9003
+Version: 0.0.0.9004
 Authors@R: c(
     person(
       "James", 
